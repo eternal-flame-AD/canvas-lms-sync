@@ -1,0 +1,4 @@
+token: xxxxxx
+host: "https://canvas.instructure.com/"
+courseid: 123456
+usemodules: true # whether to find files in "modules" or "files" section
