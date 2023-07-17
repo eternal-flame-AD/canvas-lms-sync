@@ -8,6 +8,7 @@ pub mod canvas_api;
 mod defer;
 pub mod download;
 mod path;
+pub mod sync;
 
 #[derive(Debug)]
 pub struct File {
