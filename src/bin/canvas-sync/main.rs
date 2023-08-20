@@ -35,6 +35,9 @@ impl Config {
 
 #[tokio::main]
 async fn main() {
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "canvas_lms_sync=info");
+    }
     env_logger::init();
 
     let config = Config::read_from_path("canvas-sync.yml").expect("Failed to read config file");
