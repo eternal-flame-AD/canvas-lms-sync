@@ -1,5 +1,5 @@
 use futures::StreamExt;
-use log::{debug, error};
+use log::{debug, error, warn};
 use std::{collections::HashMap, path::PathBuf};
 use tokio::sync::Mutex;
 
@@ -45,13 +45,27 @@ pub async fn download_modules(config: &SyncConfig, client: &Client, downloader: 
                                             indent.lock().await.add(item.indent, item);
                                         }
                                         "File" => {
-                                            let file = client
+                                            let mut file = client
                                                 .get_course_file(
                                                     config.courseid,
                                                     item.content_id.expect("No content id"),
                                                 )
                                                 .await
                                                 .unwrap();
+                                            if file.url == "" {
+                                                file.url = client.build_url(
+                                                    format!(
+                                                    "/files/{}/download?download_frd=1&verifier={}",
+                                                    file.id, file.uuid
+                                                )
+                                                    .as_str(),
+                                                );
+                                                warn!(
+                                                    "No url for file: {:?}, trying to guess as {}",
+                                                    file.display_name, file.url
+                                                );
+                                            }
+                                            debug!("File: {:?}", file);
 
                                             let mut file = File::from(file);
 
