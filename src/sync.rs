@@ -122,7 +122,20 @@ pub async fn download_files(config: &SyncConfig, client: &Client, downloader: &D
         .get_all_files(config.courseid)
         .for_each(|file| async {
             match file {
-                Ok(file) => {
+                Ok(mut file) => {
+                    if file.url == "" {
+                        warn!(
+                            "No url for file: {:?}, trying to guess as {}",
+                            file.display_name, file.url
+                        );
+                        file.url = client.build_url(
+                            format!(
+                                "/files/{}/download?download_frd=1&verifier={}",
+                                file.id, file.uuid
+                            )
+                            .as_str(),
+                        );
+                    }
                     let folder_id = file.folder_id;
                     let mut file = File::from(file);
                     file.set_folder_path(&folders, folder_id);
