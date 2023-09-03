@@ -3,7 +3,12 @@ use log::{debug, error, warn};
 use std::{collections::HashMap, path::PathBuf};
 use tokio::sync::Mutex;
 
-use crate::{canvas_api::Client, download::Downloader, File};
+use crate::{
+    canvas_api::Client,
+    download::Downloader,
+    path::{sanitize_file_name, write_url_file},
+    File,
+};
 
 pub struct IndentStack<T> {
     stack: Vec<(i64, T)>,
@@ -86,6 +91,20 @@ pub async fn download_modules(config: &SyncConfig, client: &Client, downloader: 
                                             }
 
                                             downloader.submit(file.into());
+                                        }
+                                        "ExternalUrl" | "ExternalTool" => {
+                                            if let Some(url) = item.url {
+                                                let folder_path = PathBuf::from(&config.path)
+                                                    .join("Modules")
+                                                    .join(sanitize_file_name(&module.name))
+                                                    .join(sanitize_file_name(&item.title));
+                                                write_url_file(
+                                                    &url,
+                                                    &item.title,
+                                                    folder_path.to_str().expect("Invalid path"),
+                                                )
+                                                .unwrap();
+                                            }
                                         }
                                         _ => {}
                                     }
